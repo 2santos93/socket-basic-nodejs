@@ -10,9 +10,6 @@ const port = process.env.PORT || 3000;
 app.use(express.static(publicPath)); // middleware para habilitar la carpeta public y que todos puedan acceder a ella
 require('./socket/socket');
 
-
-
-
 server.listen(port, (err) => {
 
     if (err) throw new Error(err);

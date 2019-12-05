@@ -1,36 +1,43 @@
 const {io} = require('../server');
+const {TicketControl} = require('../classes/ticketControl');
+
+const ticketControl = new TicketControl();
 
 io.on('connection', (client) => {
-
-    console.log('client connected');
-
-    client.emit('sendMessage', {
-        user: 'admin',
-        message: "welcome to this app"
-    });
 
     client.on('disconnect', () => {
         console.log("client disconnected")
     });
 
     // listen client
-    client.on('sendMessage', (data, callback) => {
+    client.on("nextTicket", (data, callback) => {
+        
+        const newTicket = ticketControl.next();
+        console.log(newTicket);
 
-        console.log(data);
+        callback(newTicket);
+    });
 
-        client.broadcast.emit("sendMessage", data);
+    client.emit("getLastTicket", {
+        lastTicket:ticketControl.getLastTicket(),
+        lastFourTickets: ticketControl.getLastFourTickets()
+    });
 
-        // if(data.user){
-        //     callback({
-        //         ok:true,
-        //         message: "good"
-        //     });
-        // }else{
-        //     callback({
-        //         ok:false,
-        //         message: "bad"
-        //     });
-        // }
+    client.on("attendTicket", (data, callback) => {
+
+        if( !data.desktop){
+            return callback({
+                err: true,
+                message: "desktop required"
+            });
+        }
+
+        const attendedTicket = ticketControl.attendTicket(data.desktop);
+        callback(attendedTicket);
+        client.broadcast.emit("getLastTicket", {lastFourTickets:ticketControl.lastFourTickets});
 
     });
+
+
+
 });
